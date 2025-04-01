@@ -18,7 +18,7 @@ public:
     Graph& operator=(const Graph& other); // אופרטור השמה
     ~Graph(); // מפרק
 
-    void addEdge(int src, int dest, int weight); // מוסיף קשת
+    void addEdge(int src, int dest, int weight = 1); // מוסיף קשת (עם ברירת מחדל למשקל)
     void removeEdge(int src, int dest); // מוחק קשת
     void print_graph(); // מדפיס את הגרף
 
