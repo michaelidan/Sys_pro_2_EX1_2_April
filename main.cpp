@@ -66,6 +66,7 @@ int main() {
         // Kruskal
         try {
             std::cout << "\nMinimum Spanning Tree (Kruskal):" << std::endl;
+            std::cout << std::flush; // נוסיף שטיפה כאן
             graph::Graph kruskalTree = alg.kruskal();
             kruskalTree.print_graph();
         } catch (const char* e) {
@@ -129,6 +130,7 @@ int main() {
         // Kruskal
         try {
             std::cout << "\nMinimum Spanning Tree (Kruskal):" << std::endl;
+            std::cout << std::flush; // נוסיף שטיפה כאן
             graph::Graph kruskalTree = alg.kruskal();
             kruskalTree.print_graph();
         } catch (const char* e) {
@@ -190,6 +192,7 @@ int main() {
         // Kruskal
         try {
             std::cout << "\nMinimum Spanning Tree (Kruskal):" << std::endl;
+            std::cout << std::flush; // נוסיף שטיפה כאן
             graph::Graph kruskalTree = alg.kruskal();
             kruskalTree.print_graph();
         } catch (const char* e) {
@@ -247,6 +250,7 @@ int main() {
         // Kruskal
         try {
             std::cout << "\nMinimum Spanning Tree (Kruskal):" << std::endl;
+            std::cout << std::flush; // נוסיף שטיפה כאן
             graph::Graph kruskalTree = alg.kruskal();
             kruskalTree.print_graph();
         } catch (const char* e) {
