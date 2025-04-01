@@ -3,259 +3,627 @@
 #include "Graph.h"
 #include <iostream> // עבור std::cout ו-std::endl
 
-namespace graph {
+namespace graph
+{
 
-// בניית גרף עם מספר קודקודים
-Graph::Graph(int vertices) : numVertices(vertices) {
-    if (vertices < 0) {
-        throw "Number of vertices cannot be negative!";
-    }
+    // בניית גרף עם מספר קודקודים
+    Graph::Graph(int vertices) : numVertices(vertices) {
+        // בנאי (Constructor) של המחלקה Graph.
+        // בנאי זה נקרא כאשר יוצרים אובייקט חדש מסוג Graph.
+        // תפקידו הוא לאתחל את האובייקט, כלומר, להקצות זיכרון ולתת ערכים התחלתיים למשתנים.
 
-    adjList = new int*[numVertices];
-    weights = new int*[numVertices];
-    sizes = new int[numVertices];
+        // בדיקה אם מספר הקודקודים שהתקבל הוא שלילי.
+        // מספר שלילי של קודקודים אינו הגיוני עבור גרף, לכן זורקים חריגה.
+        if (vertices < 0) {
+            // זריקת חריגה (exception) כדי לציין שהקלט לא תקין.
+            throw "Number of vertices cannot be negative!";
+        }
 
-    for (int i = 0; i < numVertices; i++) {
-        adjList[i] = nullptr;
-        weights[i] = nullptr;
-        sizes[i] = 0;
-    }
-}
+        // הקצאת זיכרון דינאמי עבור רשימת רשימות השכנים (adjList).
+        // adjList הוא מצביע למערך של מצביעים, כאשר כל מצביע מצביע לרשימת השכנים של קודקוד.
+        // גודל המערך הוא numVertices (מספר הקודקודים בגרף).
+        adjList = new int *[numVertices];
 
-Graph::Graph(const Graph& other) : numVertices(other.numVertices) {
-    adjList = new int*[numVertices];
-    weights = new int*[numVertices];
-    sizes = new int[numVertices];
+        // הקצאת זיכרון דינאמי עבור רשימת מערכי המשקלים (weights).
+        // weights הוא מצביע למערך של מצביעים, כאשר כל מצביע מצביע למערך המשקלים של הקשתות היוצאות מקודקוד.
+        // גודל המערך הוא numVertices.
+        weights = new int *[numVertices];
 
-    for (int i = 0; i < numVertices; i++) {
-        sizes[i] = other.sizes[i];
-        if (sizes[i] > 0) {
-            adjList[i] = new int[sizes[i]];
-            weights[i] = new int[sizes[i]];
-            for (int j = 0; j < sizes[i]; j++) {
-                adjList[i][j] = other.adjList[i][j];
-                weights[i][j] = other.weights[i][j];
-            }
-        } else {
+        // הקצאת זיכרון דינאמי עבור מערך גדלי רשימות השכנים (sizes).
+        // sizes הוא מצביע למערך של מספרים שלמים, כאשר כל מספר שלם מייצג את גודל רשימת השכנים של קודקוד.
+        // גודל המערך הוא numVertices.
+        sizes = new int[numVertices];
+
+        // אתחול רשימות השכנים וגדלים לערכים התחלתיים.
+        // עוברים על כל הקודקודים בגרף ומאתחלים את הנתונים שלהם.
+        for (int i = 0; i < numVertices; i++) {
+            // אתחול רשימת השכנים של קודקוד i ל-nullptr (רשימה ריקה).
+            // nullptr מציין שאין עדיין זיכרון מוקצה לרשימה.
             adjList[i] = nullptr;
+
+            // אתחול מערך המשקלים של קודקוד i ל-nullptr (מערך ריק).
             weights[i] = nullptr;
+
+            // אתחול גודל רשימת השכנים של קודקוד i ל-0 (אין שכנים התחלתיים).
+            sizes[i] = 0;
         }
     }
-}
 
-Graph& Graph::operator=(const Graph& other) {
-    if (this == &other) {
+    Graph::Graph(const Graph &other) : numVertices(other.numVertices) {
+        adjList = new int *[numVertices];
+        weights = new int *[numVertices];
+        sizes = new int[numVertices];
+
+        // העתקת הנתונים מגרף אחר (other) לגרף הנוכחי (כמו בבנאי העתקה)
+        for (int i = 0; i < numVertices; i++) {
+            // לולאה שעוברת על כל הקודקודים בגרף
+            // i מייצג את אינדקס הקודקוד הנוכחי
+
+            sizes[i] = other.sizes[i];
+            // העתקת גודל רשימת השכנים מהגרף המועתק
+            // sizes[i] שומר את מספר השכנים של הקודקוד i
+
+            if (sizes[i] > 0) {
+                // אם לקודקוד i יש שכנים (כלומר, רשימת השכנים אינה ריקה)
+
+                adjList[i] = new int[sizes[i]];
+                // הקצאת זיכרון לרשימת השכנים של הקודקוד i
+                // גודל הרשימה מותאם למספר השכנים
+
+                weights[i] = new int[sizes[i]];
+                // הקצאת זיכרון למערך המשקלים של הקודקוד i
+                // גודל המערך מותאם למספר השכנים
+
+                for (int j = 0; j < sizes[i]; j++) {
+                    // לולאה שעוברת על כל השכנים של הקודקוד i
+                    // j מייצג את אינדקס השכן הנוכחי
+
+                    adjList[i][j] = other.adjList[i][j];
+                    // העתקת השכן ה-j של הקודקוד i מהגרף המועתק
+                    // other.adjList[i][j] הוא השכן ה-j של הקודקוד i בגרף המועתק
+
+                    weights[i][j] = other.weights[i][j];
+                    // העתקת המשקל של הקשת לקודקוד ה-j מהגרף המועתק
+                    // other.weights[i][j] הוא המשקל של הקשת לקודקוד ה-j בגרף המועתק
+                }
+            }
+            else {
+                // אם לקודקוד i אין שכנים (רשימת השכנים ריקה)
+
+                adjList[i] = nullptr;
+                // אתחול רשימת השכנים של הקודקוד i ל-nullptr (אין זיכרון מוקצה)
+
+                weights[i] = nullptr;
+                // אתחול מערך המשקלים של הקודקוד i ל-nullptr (אין זיכרון מוקצה)
+            }
+        }
+    }
+
+    // אופרטור השמה (Assignment Operator) - מאפשר להשמין גרף אחד לתוך גרף אחר
+    Graph& Graph::operator=(const Graph& other) {
+        // אופרטור ההשמה של המחלקה Graph.
+        // אופרטור זה נקרא כאשר משתמשים באופרטור ההשמה (=) בין שני אובייקטים מסוג Graph.
+        // תפקידו הוא להעתיק את הנתונים מהגרף other לתוך הגרף הנוכחי (*this).
+        // חשוב לממש את האופרטור הזה בצורה נכונה כדי למנוע בעיות כמו דליפת זיכרון והעתקה חלקית.
+
+        // בדיקה אם מנסים להשמין גרף לעצמו (מקרה של g = g).
+        // this הוא מצביע לאובייקט הנוכחי, ו-&other הוא הכתובת של האובייקט other.
+        if (this == &other) {
+            // אם מנסים להשמין גרף לעצמו, אין מה לעשות.
+            // פשוט מחזירים את הגרף הנוכחי.
+            return *this;
+        }
+
+        // שחרור הזיכרון של הגרף הנוכחי לפני העתקת הנתונים החדשים.
+        // זה חשוב כדי למנוע דליפת זיכרון.
+        for (int i = 0; i < numVertices; i++) {
+            // בדיקה אם לקודקוד i יש שכנים (כלומר, אם רשימת השכנים שלו לא ריקה).
+            if (sizes[i] > 0) {
+                // אם לקודקוד i יש שכנים, צריך לשחרר את הזיכרון שהוקצה עבורם.
+
+                delete[] adjList[i];
+                // שחרור הזיכרון שהוקצה לרשימת השכנים של קודקוד i.
+                // adjList[i] הוא מצביע לרשימת השכנים של קודקוד i.
+
+                delete[] weights[i];
+                // שחרור הזיכרון שהוקצה למערך המשקלים של קודקוד i.
+                // weights[i] הוא מצביע למערך המשקלים של קודקוד i.
+            }
+        }
+        // שחרור הזיכרון שהוקצה עבור רשימת מצביעי רשימות השכנים.
+        delete[] adjList;
+        // שחרור הזיכרון שהוקצה עבור רשימת מצביעי מערכי המשקלים.
+        delete[] weights;
+        // שחרור הזיכרון שהוקצה עבור מערך גדלי רשימות השכנים.
+        delete[] sizes;
+
+        // העתקת מספר הקודקודים מהגרף other לגרף הנוכחי.
+        numVertices = other.numVertices;
+
+        // הקצאת זיכרון חדש עבור הנתונים של הגרף הנוכחי.
+        // הגודל של המערכים מותאם למספר הקודקודים החדש.
+        adjList = new int *[numVertices];
+        weights = new int *[numVertices];
+        sizes = new int[numVertices];
+
+        // העתקת הנתונים מגרף אחר (other) לגרף הנוכחי (כמו בבנאי העתקה)
+        for (int i = 0; i < numVertices; i++) {
+            // לולאה שעוברת על כל הקודקודים בגרף
+            // i מייצג את אינדקס הקודקוד הנוכחי
+
+            sizes[i] = other.sizes[i];
+            // העתקת גודל רשימת השכנים מהגרף המועתק
+            // sizes[i] שומר את מספר השכנים של הקודקוד i          
+            if (sizes[i] > 0) {
+                // אם לקודקוד i יש שכנים (כלומר, רשימת השכנים אינה ריקה)                    
+                adjList[i] = new int[sizes[i]];
+                weights[i] = new int[sizes[i]];
+                // הקצאת זיכרון למערך המשקלים של הקודקוד i
+                // גודל המערך מותאם למספר השכנים
+                for (int j = 0; j < sizes[i]; j++) {
+                    // לולאה שעוברת על כל השכנים של הקודקוד i
+                    // j מייצג את אינדקס השכן הנוכחי                    
+                    adjList[i][j] = other.adjList[i][j];
+
+                    // העתקת השכן ה-j של הקודקוד i מהגרף המועתק
+                    // other.adjList[i][j] הוא השכן ה-j של הקודקוד i בגרף המועתק
+                    weights[i][j] = other.weights[i][j];
+
+                    // העתקת המשקל של הקשת לקודקוד ה-j מהגרף המועתק
+                    // other.weights[i][j] הוא המשקל של הקשת לקודקוד ה-j בגרף המועתק                    
+                }
+            }
+            else {
+                // אם לקודקוד i אין שכנים (רשימת השכנים ריקה)                
+                adjList[i] = nullptr;
+                // אתחול רשימת השכנים של הקודקוד i ל-nullptr (אין זיכרון מוקצה)
+                weights[i] = nullptr;
+                // אתחול מערך המשקלים של הקודקוד i ל-nullptr (אין זיכרון מוקצה)
+            }
+        }
+
         return *this;
     }
 
-    for (int i = 0; i < numVertices; i++) {
-        if (sizes[i] > 0) {
-            delete[] adjList[i];
-            delete[] weights[i];
+    // מפרק (Destructor) - משחרר את הזיכרון שהוקצה עבור הגרף
+    Graph::~Graph() {
+        // המפרק (destructor) של המחלקה Graph.
+        // המפרק נקרא אוטומטית כאשר אובייקט מסוג Graph יוצא מהסקופ או נמחק.
+        // תפקידו הוא לשחרר את כל הזיכרון שהוקצה דינאמית עבור האובייקט,
+        // כדי למנוע דליפת זיכרון (memory leak).
+
+        // מעבר על כל הקודקודים בגרף.
+        // i מייצג את אינדקס הקודקוד הנוכחי.
+        for (int i = 0; i < numVertices; i++) {
+            // בדיקה אם לקודקוד i יש שכנים (כלומר, אם רשימת השכנים שלו לא ריקה).
+            if (sizes[i] > 0) {
+                // אם לקודקוד i יש שכנים, צריך לשחרר את הזיכרון שהוקצה עבורם.
+
+                delete[] adjList[i];
+                // שחרור הזיכרון שהוקצה לרשימת השכנים של קודקוד i.
+                // adjList[i] הוא מצביע לרשימת השכנים של קודקוד i.
+
+                delete[] weights[i];
+                // שחרור הזיכרון שהוקצה למערך המשקלים של קודקוד i.
+                // weights[i] הוא מצביע למערך המשקלים של קודקוד i.
+            }
         }
+
+        // שחרור הזיכרון שהוקצה עבור רשימת מצביעי רשימות השכנים.
+        // adjList הוא מצביע למערך של מצביעים, כאשר כל מצביע מצביע לרשימת השכנים של קודקוד.
+        delete[] adjList;
+
+        // שחרור הזיכרון שהוקצה עבור רשימת מצביעי מערכי המשקלים.
+        // weights הוא מצביע למערך של מצביעים, כאשר כל מצביע מצביע למערך המשקלים של קודקוד.
+        delete[] weights;
+
+        // שחרור הזיכרון שהוקצה עבור מערך גדלי רשימות השכנים.
+        // sizes הוא מצביע למערך של מספרים שלמים, כאשר כל מספר שלם מייצג את גודל רשימת השכנים של קודקוד.
+        delete[] sizes;
     }
-    delete[] adjList;
-    delete[] weights;
-    delete[] sizes;
 
-    numVertices = other.numVertices;
+    // הוספת קשת לגרף
+    void Graph::addEdge(int src, int dest, int weight) {
+        // הפונקציה addEdge מוסיפה קשת חדשה לגרף.
+        // הקשת מוגדרת על ידי שלושה פרמטרים:
+        // src: הקודקוד ממנו הקשת יוצאת (מקור).
+        // dest: הקודקוד אליו הקשת נכנסת (יעד).
+        // weight: המשקל של הקשת (עלות המעבר).
 
-    adjList = new int*[numVertices];
-    weights = new int*[numVertices];
-    sizes = new int[numVertices];
+        // בדיקה אם הקודקודים src ו-dest חוקיים.
+        // הקודקודים חוקיים אם הם נמצאים בטווח מ-0 עד numVertices - 1.
+        if (src < 0 || src >= numVertices || dest < 0 || dest >= numVertices) {
+            // אם אחד הקודקודים לא חוקי, זורקים חריגה (exception).
+            // החריגה מציינת שהקלט לפונקציה לא תקין.
+            throw "Invalid vertex!";
+        }
 
-    for (int i = 0; i < numVertices; i++) {
-        sizes[i] = other.sizes[i];
-        if (sizes[i] > 0) {
-            adjList[i] = new int[sizes[i]];
-            weights[i] = new int[sizes[i]];
+        // בדיקה אם מנסים להוסיף קשת מקודקוד לעצמו (לולאה עצמית).
+        // לולאות עצמיות בדרך כלל לא מורשות בגרפים פשוטים.
+        if (src == dest) {
+            // אם מנסים להוסיף לולאה עצמית, זורקים חריגה.
+            throw "Self-loops are not allowed!";
+        }
+
+        // בדיקה אם הקשת כבר קיימת בגרף.
+        // עוברים על רשימת השכנים של הקודקוד src כדי לבדוק אם dest כבר נמצא בה.
+        for (int i = 0; i < sizes[src]; i++) {
+            // אם השכן ה-i של src הוא dest.
+            if (adjList[src][i] == dest) {
+                // הקשת כבר קיימת, לכן אין מה לעשות.
+                // יוצאים מהפונקציה.
+                return;
+            }
+        }
+
+        // חישוב הגודל החדש של רשימת השכנים של src.
+        // הגודל החדש יהיה הגודל הנוכחי + 1 (כי מוסיפים שכן חדש).
+        int newSize = sizes[src] + 1;
+
+        // הקצאת זיכרון לרשימת השכנים החדשה של src.
+        // newAdj הוא מצביע לרשימה החדשה.
+        // הגודל של הרשימה החדשה הוא newSize.
+        int* newAdj = new int[newSize];
+
+        // הקצאת זיכרון למערך המשקלים החדש של src.
+        // newWeights הוא מצביע למערך המשקלים החדש.
+        // הגודל של המערך החדש הוא newSize.
+        int* newWeights = new int[newSize];
+
+        // העתקת השכנים הקיימים של src לרשימה החדשה.
+        // עוברים על רשימת השכנים הישנה ומעתיקים כל שכן לרשימה החדשה.
+        for (int i = 0; i < sizes[src]; i++) {
+            // העתקת השכן ה-i לרשימה החדשה.
+            newAdj[i] = adjList[src][i];
+            // העתקת המשקל של הקשת לשכן ה-i למערך החדש.
+            newWeights[i] = weights[src][i];
+        }
+
+        // הוספת השכן החדש (dest) לסוף רשימת השכנים החדשה.
+        newAdj[sizes[src]] = dest;
+        // הוספת המשקל של הקשת החדשה.
+        newWeights[sizes[src]] = weight;
+
+        // שחרור הזיכרון של רשימת השכנים הישנה ומערך המשקלים הישן.
+        // אם רשימת השכנים הייתה ריקה, אין מה לשחרר.
+        if (sizes[src] > 0) {
+            // שחרור הזיכרון של רשימת השכנים הישנה.
+            delete[] adjList[src];
+            // שחרור הזיכרון של מערך המשקלים הישן.
+            delete[] weights[src];
+        }
+
+        // עדכון המצביע לרשימת השכנים של src.
+        // מעכשיו, adjList[src] מצביע לרשימת השכנים החדשה.
+        adjList[src] = newAdj;
+
+        // עדכון המצביע למערך המשקלים של src.
+        // מעכשיו, weights[src] מצביע למערך המשקלים החדש.
+        weights[src] = newWeights;
+
+        // עדכון גודל רשימת השכנים של src.
+        // גודל הרשימה הוא עכשיו הגודל החדש.
+        sizes[src] = newSize;
+
+        // ביצוע אותו תהליך עבור הקודקוד dest (גרף לא מכוון)
+        // מכיוון שהגרף לא מכוון, יש להוסיף את הקשת גם מהיעד למקור
+
+        newSize = sizes[dest] + 1;
+        // חישוב הגודל החדש של רשימת השכנים של dest
+        // הגודל החדש הוא הגודל הנוכחי + 1
+
+        newAdj = new int[newSize];
+        // הקצאת זיכרון לרשימת השכנים החדשה של dest
+        // הגודל מותאם לגודל החדש
+
+        newWeights = new int[newSize];
+        // הקצאת זיכרון למערך המשקלים החדש של dest
+        // הגודל מותאם לגודל החדש
+
+        for (int i = 0; i < sizes[dest]; i++) {
+            // לולאה שעוברת על כל השכנים הקיימים של dest
+            // i מייצג את אינדקס השכן הנוכחי
+
+            newAdj[i] = adjList[dest][i];
+            // העתקת השכן ה-i של dest לרשימה החדשה
+
+            newWeights[i] = weights[dest][i];
+            // העתקת המשקל של הקשת לשכן ה-i של dest למערך החדש
+        }
+
+        newAdj[sizes[dest]] = src;
+        // הוספת הקודקוד src כשכן החדש של dest (הקשת בכיוון ההפוך)
+
+        newWeights[sizes[dest]] = weight;
+        // הוספת המשקל של הקשת החדשה
+
+        if (sizes[dest] > 0) {
+            // אם ל-dest היו שכנים לפני הוספת הקשת
+
+            delete[] adjList[dest];
+            // שחרור הזיכרון של רשימת השכנים הישנה של dest
+
+            delete[] weights[dest];
+            // שחרור הזיכרון של מערך המשקלים הישן של dest
+        }
+
+        adjList[dest] = newAdj;
+        // עדכון רשימת השכנים של dest עם הרשימה החדשה
+
+        weights[dest] = newWeights;
+        // עדכון מערך המשקלים של dest עם המערך החדש
+
+        sizes[dest] = newSize;
+        // עדכון גודל רשימת השכנים של dest
+    }
+
+    // הסרת קשת מהגרף
+    void Graph::removeEdge(int src, int dest) {
+        // הפונקציה מקבלת שני קודקודים: src (מקור הקשת) ו-dest (יעד הקשת)
+        // מטרת הפונקציה היא להסיר את הקשת (src, dest) מהגרף.
+        // מכיוון שהגרף לא מכוון, יש להסיר את הקשת גם בכיוון ההפוך (dest, src).
+
+        // בדיקה אם הקודקודים src ו-dest חוקיים
+        // כלומר, הם נמצאים בטווח של מספרי הקודקודים בגרף (מ-0 עד numVertices - 1)
+        if (src < 0 || src >= numVertices || dest < 0 || dest >= numVertices) {
+            // אם אחד הקודקודים לא חוקי, זורקים חריגה (exception)
+            // כדי לציין שהקלט לא תקין
+            throw "Invalid vertex!";
+        }
+
+        // אתחול משתנה index ל-1-
+        // index ישמש לשמירת האינדקס של הקודקוד dest ברשימת השכנים של src
+        // ערך 1- מציין שהקודקוד dest עדיין לא נמצא ברשימה
+        int index = -1;
+
+        // מעבר על רשימת השכנים של הקודקוד src
+        // הלולאה עוברת על כל השכנים של src כדי למצוא את dest
+        for (int i = 0; i < sizes[src]; i++) {
+            // בדיקה אם השכן ה-i של src הוא dest
+            if (adjList[src][i] == dest) {
+                // אם כן, שמירת האינדקס i בתוך המשתנה index
+                index = i;
+                // יציאה מהלולאה כי הקודקוד dest נמצא
+                break;
+            }
+        }
+
+        // בדיקה אם הקודקוד dest לא נמצא ברשימת השכנים של src
+        if (index == -1) {
+            // אם הקודקוד dest לא נמצא, זורקים חריגה
+            // כדי לציין שהקשת (src, dest) לא קיימת בגרף
+            throw "Edge does not exist!";
+        }
+
+        // חישוב הגודל החדש של רשימת השכנים של src לאחר הסרת הקשת
+        // הגודל החדש יהיה הגודל הנוכחי פחות 1
+        int newSize = sizes[src] - 1;
+
+        // אתחול מצביעים לרשימת השכנים החדשה ולמערך המשקלים החדש ל-nullptr
+        // newAdj יצביע על רשימת השכנים החדשה של src
+        // newWeights יצביע על מערך המשקלים החדש של הקשתות היוצאות מ-src
+        // nullptr מציין שאין עדיין זיכרון מוקצה למערכים אלה
+        int* newAdj = nullptr;
+        int* newWeights = nullptr;
+
+        // בדיקה אם יש שכנים לקודקוד src אחרי הסרת הקשת
+        // כלומר, אם הגודל החדש של רשימת השכנים גדול מ-0
+        if (newSize > 0) {
+            // אם יש שכנים, הקצאת זיכרון לרשימת השכנים החדשה ולמערך המשקלים החדש
+            // הגודל של המערכים מותאם לגודל החדש של רשימת השכנים
+            newAdj = new int[newSize];
+            newWeights = new int[newSize];
+            // העתקת השכנים והמשקלים הקיימים לרשימה החדשה (ללא הקשת להסרה)
+            for (int i = 0, j = 0; i < sizes[src]; i++) {
+                // לולאה שעוברת על כל השכנים של src
+                // i מייצג את אינדקס השכן המקורי
+                // j מייצג את אינדקס השכן ברשימה החדשה
+
+                if (i != index) {
+                    // אם השכן הנוכחי אינו הקודקוד dest (הקשת להסרה)
+
+                    newAdj[j] = adjList[src][i];
+                    // העתקת השכן ה-i המקורי לרשימה החדשה
+                    // השכן ה-j ברשימה החדשה
+
+                    newWeights[j] = weights[src][i];
+                    // העתקת המשקל של הקשת לשכן ה-i המקורי למערך החדש
+                    // המשקל לשכן ה-j ברשימה החדשה
+
+                    j++;
+                    // קידום האינדקס של השכן ברשימה החדשה
+                    // כי הוספנו שכן חדש
+                }
+            }
+        }
+
+        if (sizes[src] > 0) {
+            // בדיקה אם לקודקוד src היו שכנים לפני הוספת הקשת החדשה.
+            // אם כן, צריך לשחרר את הזיכרון שהוקצה לרשימת השכנים ולמערך המשקלים הישנים.
+            // זה מונע דליפת זיכרון (memory leak), שבה זיכרון מוקצה אך לא משוחרר.
+
+            delete[] adjList[src];
+            // שחרור הזיכרון שהוקצה לרשימת השכנים הישנה של src.
+            // adjList[src] הוא מצביע לרשימת השכנים הישנה.
+
+            delete[] weights[src];
+            // שחרור הזיכרון שהוקצה למערך המשקלים הישן של src.
+            // weights[src] הוא מצביע למערך המשקלים הישן.
+        }
+
+        adjList[src] = newAdj;
+        // עדכון המצביע לרשימת השכנים של src.
+        // adjList[src] מקבל את המצביע לרשימת השכנים החדשה (newAdj),
+        // שמכילה את השכנים הישנים ואת השכן החדש.
+
+        weights[src] = newWeights;
+        // עדכון המצביע למערך המשקלים של src.
+        // weights[src] מקבל את המצביע למערך המשקלים החדש (newWeights),
+        // שמכיל את המשקלים הישנים ואת המשקל של הקשת החדשה.
+
+        sizes[src] = newSize;
+        // עדכון גודל רשימת השכנים של src.
+        // sizes[src] מקבל את הגודל החדש של הרשימה (newSize),
+        // שהוא הגודל הישן + 1 (השכן החדש).
+
+        // ביצוע אותו תהליך עבור הקודקוד dest (גרף לא מכוון)
+        // מכיוון שהגרף לא מכוון, יש להסיר את הקשת גם מהיעד למקור
+
+        index = -1;
+        // אתחול האינדקס של הקשת להסרה ל-1- (לא נמצאה עדיין)
+
+        for (int i = 0; i < sizes[dest]; i++) {
+            // לולאה שעוברת על כל השכנים של dest
+            // i מייצג את אינדקס השכן הנוכחי
+
+            if (adjList[dest][i] == src) {
+                // אם השכן הנוכחי הוא הקודקוד src (הקשת להסרה)
+
+                index = i;
+                // שמירת האינדקס של הקשת להסרה
+
+                break;
+                // יציאה מהלולאה כי הקשת נמצאה
+            }
+        }
+
+        newSize = sizes[dest] - 1;
+        // חישוב הגודל החדש של רשימת השכנים של dest
+        // הגודל החדש הוא הגודל הנוכחי - 1
+
+        newAdj = nullptr;
+        // אתחול רשימת השכנים החדשה ל-nullptr (יכול להיות ריק)
+
+        newWeights = nullptr;
+        // אתחול מערך המשקלים החדש ל-nullptr (יכול להיות ריק)
+
+        if (newSize > 0) {
+            // אם ל-dest יהיו שכנים אחרי הסרת הקשת
+
+            newAdj = new int[newSize];
+            // הקצאת זיכרון לרשימת השכנים החדשה של dest
+            // הגודל מותאם לגודל החדש
+
+            newWeights = new int[newSize];
+            // הקצאת זיכרון למערך המשקלים החדש של dest
+            // הגודל מותאם לגודל החדש
+
+            for (int i = 0, j = 0; i < sizes[dest]; i++) {
+                // לולאה שעוברת על כל השכנים של dest
+                // i מייצג את אינדקס השכן המקורי
+                // j מייצג את אינדקס השכן ברשימה החדשה
+
+                if (i != index) {
+                    // אם השכן הנוכחי אינו הקודקוד src (הקשת להסרה)
+
+                    newAdj[j] = adjList[dest][i];
+                    // העתקת השכן ה-i המקורי לרשימה החדשה
+                    // השכן ה-j ברשימה החדשה
+
+                    newWeights[j] = weights[dest][i];
+                    // העתקת המשקל של הקשת לשכן ה-i המקורי למערך החדש
+                    // המשקל לשכן ה-j ברשימה החדשה
+
+                    j++;
+                    // קידום האינדקס של השכן ברשימה החדשה
+                    // כי הוספנו שכן חדש
+                }
+            }
+        }
+
+        if (sizes[dest] > 0) {
+            // אם ל-dest היו שכנים לפני הסרת הקשת
+
+            delete[] adjList[dest];
+            // שחרור הזיכרון של רשימת השכנים הישנה של dest
+
+            delete[] weights[dest];
+            // שחרור הזיכרון של מערך המשקלים הישן של dest
+        }
+
+        adjList[dest] = newAdj;
+        // עדכון רשימת השכנים של dest עם הרשימה החדשה
+
+        weights[dest] = newWeights;
+        // עדכון מערך המשקלים של dest עם המערך החדש
+
+        sizes[dest] = newSize;
+        // עדכון גודל רשימת השכנים של dest
+    }
+
+    // הדפסת הגרף
+    void Graph::print_graph() {
+        // הפונקציה מדפיסה את הגרף לייצוג קריא לבני אדם.
+        // היא עוברת על כל הקודקודים ומדפיסה את רשימת השכנים והמשקלים של כל קודקוד.
+
+        // לולאה שעוברת על כל הקודקודים בגרף
+        // i מייצג את אינדקס הקודקוד הנוכחי
+        for (int i = 0; i < numVertices; i++) {
+            // הדפסת מספר הקודקוד הנוכחי
+            std::cout << "Vertex " << i << ": {";
+
+            // לולאה שעוברת על כל השכנים של הקודקוד הנוכחי
+            // j מייצג את אינדקס השכן הנוכחי
             for (int j = 0; j < sizes[i]; j++) {
-                adjList[i][j] = other.adjList[i][j];
-                weights[i][j] = other.weights[i][j];
+                // הדפסת השכן הנוכחי והמשקל של הקשת אליו
+                std::cout << adjList[i][j] << " (" << weights[i][j] << ")";
+
+                // אם זה לא השכן האחרון, הדפסת פסיק ורווח להפרדה
+                if (j < sizes[i] - 1) {
+                    std::cout << ",  ";
+                }
             }
-        } else {
-            adjList[i] = nullptr;
-            weights[i] = nullptr;
+            // סגירת הסוגריים והדפסת מעבר שורה לסדר
+            std::cout << "}" << std::endl;
         }
     }
 
-    return *this;
-}
+    // פונקציות גישה (Getters) - מאפשרות לקבל מידע על הגרף
 
-Graph::~Graph() {
-    for (int i = 0; i < numVertices; i++) {
-        if (sizes[i] > 0) {
-            delete[] adjList[i];
-            delete[] weights[i];
+    // החזרת מספר הקודקודים בגרף
+    int Graph::getNumVertices() const {
+        // הפונקציה מחזירה את מספר הקודקודים בגרף (numVertices).
+        // המילה השמורה const מציינת שהפונקציה לא משנה את מצב האובייקט.
+        return numVertices;
+    }
+
+    // החזרת מספר השכנים של קודקוד מסוים
+    int Graph::getSize(int v) const {
+        // הפונקציה מחזירה את מספר השכנים של הקודקוד v.
+        // v הוא אינדקס הקודקוד שעבורו רוצים לקבל את מספר השכנים.
+
+        // בדיקה אם הקודקוד v חוקי (נמצא בטווח הקודקודים בגרף)
+        if (v < 0 || v >= numVertices) {
+            // אם הקודקוד לא חוקי, זריקת חריגה
+            throw "Invalid vertex!";
         }
-    }
-    delete[] adjList;
-    delete[] weights;
-    delete[] sizes;
-}
-
-// הוספת קשת לגרף
-void Graph::addEdge(int src, int dest, int weight) {
-    if (src < 0 || src >= numVertices || dest < 0 || dest >= numVertices) {
-        throw "Invalid vertex!";
-    }
-    if (src == dest) {
-        throw "Self-loops are not allowed!";
+        return sizes[v];
     }
 
-    for (int i = 0; i < sizes[src]; i++) {
-        if (adjList[src][i] == dest) {
-            return;
+    // החזרת רשימת השכנים של קודקוד מסוים
+    int* Graph::getAdjList(int v) const {
+        // הפונקציה מחזירה מצביע לרשימת השכנים של הקודקוד v.
+        // v הוא אינדקס הקודקוד שעבורו רוצים לקבל את רשימת השכנים.
+
+        // בדיקה אם הקודקוד v חוקי
+        if (v < 0 || v >= numVertices) {
+            // אם הקודקוד לא חוקי, זריקת חריגה
+            throw "Invalid vertex!";
         }
+        return adjList[v];
     }
 
-    int newSize = sizes[src] + 1;
-    int* newAdj = new int[newSize];
-    int* newWeights = new int[newSize];
+    // החזרת מערך המשקלים של הקשתות היוצאות מקודקוד מסוים
+    int* Graph::getWeights(int v) const {
+        // הפונקציה מחזירה מצביע למערך המשקלים של הקשתות היוצאות מהקודקוד v.
+        // v הוא אינדקס הקודקוד שעבורו רוצים לקבל את מערך המשקלים.
 
-    for (int i = 0; i < sizes[src]; i++) {
-        newAdj[i] = adjList[src][i];
-        newWeights[i] = weights[src][i];
-    }
-    newAdj[sizes[src]] = dest;
-    newWeights[sizes[src]] = weight;
-
-    if (sizes[src] > 0) {
-        delete[] adjList[src];
-        delete[] weights[src];
-    }
-    adjList[src] = newAdj;
-    weights[src] = newWeights;
-    sizes[src] = newSize;
-
-    newSize = sizes[dest] + 1;
-    newAdj = new int[newSize];
-    newWeights = new int[newSize];
-
-    for (int i = 0; i < sizes[dest]; i++) {
-        newAdj[i] = adjList[dest][i];
-        newWeights[i] = weights[dest][i];
-    }
-    newAdj[sizes[dest]] = src;
-    newWeights[sizes[dest]] = weight;
-
-    if (sizes[dest] > 0) {
-        delete[] adjList[dest];
-        delete[] weights[dest];
-    }
-    adjList[dest] = newAdj;
-    weights[dest] = newWeights;
-    sizes[dest] = newSize;
-}
-
-// הסרת קשת מהגרף
-void Graph::removeEdge(int src, int dest) {
-    if (src < 0 || src >= numVertices || dest < 0 || dest >= numVertices) {
-        throw "Invalid vertex!";
-    }
-
-    int index = -1;
-    for (int i = 0; i < sizes[src]; i++) {
-        if (adjList[src][i] == dest) {
-            index = i;
-            break;
+        // בדיקה אם הקודקוד v חוקי
+        if (v < 0 || v >= numVertices) {
+            // אם הקודקוד לא חוקי, זריקת חריגה
+            throw "Invalid vertex!";
         }
+        return weights[v];
     }
-    if (index == -1) {
-        throw "Edge does not exist!";
-    }
-
-    int newSize = sizes[src] - 1;
-    int* newAdj = nullptr;
-    int* newWeights = nullptr;
-    if (newSize > 0) {
-        newAdj = new int[newSize];
-        newWeights = new int[newSize];
-        for (int i = 0, j = 0; i < sizes[src]; i++) {
-            if (i != index) {
-                newAdj[j] = adjList[src][i];
-                newWeights[j] = weights[src][i];
-                j++;
-            }
-        }
-    }
-
-    if (sizes[src] > 0) {
-        delete[] adjList[src];
-        delete[] weights[src];
-    }
-    adjList[src] = newAdj;
-    weights[src] = newWeights;
-    sizes[src] = newSize;
-
-    index = -1;
-    for (int i = 0; i < sizes[dest]; i++) {
-        if (adjList[dest][i] == src) {
-            index = i;
-            break;
-        }
-    }
-    newSize = sizes[dest] - 1;
-    newAdj = nullptr;
-    newWeights = nullptr;
-    if (newSize > 0) {
-        newAdj = new int[newSize];
-        newWeights = new int[newSize];
-        for (int i = 0, j = 0; i < sizes[dest]; i++) {
-            if (i != index) {
-                newAdj[j] = adjList[dest][i];
-                newWeights[j] = weights[dest][i];
-                j++;
-            }
-        }
-    }
-
-    if (sizes[dest] > 0) {
-        delete[] adjList[dest];
-        delete[] weights[dest];
-    }
-    adjList[dest] = newAdj;
-    weights[dest] = newWeights;
-    sizes[dest] = newSize;
-}
-
-// הדפסת הגרף
-void Graph::print_graph() {
-    for (int i = 0; i < numVertices; i++) {
-        std::cout << "Vertex " << i << ": {";
-        for (int j = 0; j < sizes[i]; j++) {
-            std::cout << adjList[i][j] << " (" << weights[i][j] << ")";
-            if (j < sizes[i] - 1) {
-                std::cout << ",  ";
-            }
-        }
-        std::cout << "}" << std::endl;
-    }
-}
-
-int Graph::getNumVertices() const {
-    return numVertices;
-}
-
-int Graph::getSize(int v) const {
-    if (v < 0 || v >= numVertices) {
-        throw "Invalid vertex!";
-    }
-    return sizes[v];
-}
-
-int* Graph::getAdjList(int v) const {
-    if (v < 0 || v >= numVertices) {
-        throw "Invalid vertex!";
-    }
-    return adjList[v];
-}
-
-int* Graph::getWeights(int v) const {
-    if (v < 0 || v >= numVertices) {
-        throw "Invalid vertex!";
-    }
-    return weights[v];
-}
 
 } // סוף מרחב השמות graph
