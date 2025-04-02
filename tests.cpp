@@ -1,4 +1,3 @@
-// קובץ: tests.cpp
 // כתובת מייל: michael9090124@gmail.com
 
 // הגדרת doctest כך שיכלול את פונקציית main בקובץ זה
